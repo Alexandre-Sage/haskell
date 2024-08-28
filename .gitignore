@@ -1,0 +1,14 @@
+# Cabal build artifacts
+dist/
+dist-newstyle/
+cabal-dev/
+.cabal-sandbox/
+.cabal/
+*.o
+*.hi
+
+# Stack build artifacts
+.stack-work/
+
+# GHCi temporary files
+*.ghc.*

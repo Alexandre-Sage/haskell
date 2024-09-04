@@ -1,5 +1,6 @@
-module Week1 (toDigits, toDigitsRev, doubleEveryOther, sumDigits) where
+module Week1 (toDigits, toDigitsRev, doubleEveryOther, sumDigits, hanoi) where
 
+import Data.Char (GeneralCategory (MathSymbol))
 import qualified Data.List as List
 import Prelude
 
@@ -24,3 +25,10 @@ toSimpleDigit n | n > 9 = toDigits n | otherwise = [n]
 
 sumDigits :: [Integer] -> Integer
 sumDigits = sum . List.concatMap toSimpleDigit
+
+type Peg = String
+
+type Move = (Peg, Peg)
+
+hanoi :: Integer -> Peg -> Peg -> Peg -> [Move]
+hanoi disks src dest tmp | disks == 0 = [] | otherwise = hanoi (disks - 1) src tmp dest ++ [(src, dest)] ++ hanoi (disks - 1) tmp dest src

@@ -1,10 +1,8 @@
 module Week1Tests (testsWeek1) where
 
+import Helpers (assertMessage)
 import Test.HUnit (Test (TestCase, TestLabel, TestList), assertEqual, failures)
 import Week1 (doubleEveryOther, hanoi, sumDigits, toDigits, toDigitsRev)
-
-assertMessage :: Integer -> [Integer] -> String
-assertMessage testValue expectedValue = "Should return " ++ show expectedValue ++ " for " ++ show testValue
 
 toDigittest :: Integer -> [Integer] -> Test
 toDigittest testValue expectedValue = TestCase $ assertEqual (assertMessage testValue expectedValue) (toDigits testValue) expectedValue
@@ -13,10 +11,10 @@ toDigitsRevTest :: Integer -> [Integer] -> Test
 toDigitsRevTest testValue expectedValue = TestCase $ assertEqual (assertMessage testValue expectedValue) (toDigitsRev testValue) expectedValue
 
 doubleEveryotherTest :: Integer -> [Integer] -> Test
-doubleEveryotherTest testValue expectedValue = TestCase $ assertEqual (assertMessage testValue expectedValue) (doubleEveryOther (toDigits testValue)) expectedValue
+doubleEveryotherTest testValue expectedValue = TestCase $ assertEqual (assertMessage testValue expectedValue) (doubleEveryOther $ toDigits testValue) expectedValue
 
 sumDigitsTest :: [Integer] -> Integer -> Test
-sumDigitsTest testValue expectedValue = TestCase $ assertEqual ("Should teturn " ++ show expectedValue ++ " for " ++ show testValue) (sumDigits testValue) expectedValue
+sumDigitsTest testValue expectedValue = TestCase $ assertEqual (assertMessage expectedValue testValue) (sumDigits testValue) expectedValue
 
 hanoiTest :: Integer -> String -> String -> String -> [(String, String)] -> Test
 hanoiTest disk peg1 peg2 peg3 expected = TestCase $ assertEqual ("Should return" ++ show expected ++ "for" ++ show disk ++ "disk and" ++ peg1 ++ peg2 ++ peg3 ++ "pegs") (hanoi disk peg1 peg2 peg3) expected

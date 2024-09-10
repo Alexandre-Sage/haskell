@@ -1,9 +1,11 @@
-module Week2Tests (testsWeek2) where
+{-# LANGUAGE BlockArguments #-}
+
+module Week2Tests (testsWeek2, testIoWeek2) where
 
 import qualified Data.List as List
 import Helpers (assertMessage)
-import Test.HUnit (Test (TestCase, TestLabel, TestList), assertEqual, failures)
-import Week2 (LogMessage (..), MessageType (Error, Info, Warning), parseMessage)
+import Test.HUnit (Test (TestCase, TestLabel, TestList), Testable (test), assertEqual, failures)
+import Week2 (LogMessage (..), MessageTree (Leaf, Node), MessageType (Error, Info, Warning), build, parse, parseMessage)
 
 logs =
   [ ("I 6 Completed armadillo processing", LogMessage Info 6 "Completed armadillo processing"),
@@ -21,13 +23,51 @@ logs =
     ("I 29 la la la", LogMessage Info 29 "la la la")
   ]
 
+expectLogStrFormated =
+  [ LogMessage Info 6 "Completed armadillo processing",
+    LogMessage Info 1 "Nothing to report",
+    LogMessage Info 4 "Everything normal",
+    LogMessage Info 11 "Initiating self-destruct sequence",
+    LogMessage (Error 70) 3 "Way too many pickles",
+    LogMessage (Error 65) 8 "Bad pickle-flange interaction detected",
+    LogMessage Warning 5 "Flange is due for a check-up",
+    LogMessage Info 7 "Out for lunch, back in two time steps",
+    LogMessage (Error 20) 2 "Too many pickles",
+    LogMessage Info 9 "Back from lunch",
+    LogMessage (Error 99) 10 "Flange failed!"
+  ]
+
+expectedTree =
+  Node
+    ( Node (Node (Node Leaf (LogMessage Info 1 "Nothing to report") Leaf) (LogMessage (Error 20) 2 "Too many pickles") (Node (Node (Node Leaf (LogMessage (Error 70) 3 "Way too many pickles") (Node Leaf (LogMessage Info 4 "Everything normal") Leaf)) (LogMessage Warning 5 "Flange is due for a check-up") (Node Leaf (LogMessage Info 6 "Completed armadillo processing") Leaf)) (LogMessage Info 7 "Out for lunch, back in two time steps") (Node Leaf (LogMessage (Error 65) 8 "Bad pickle-flange interaction detected") Leaf))) (LogMessage Info 9 "Back from lunch") Leaf
+    )
+    (LogMessage (Error 99) 10 "Flange failed!")
+    (Node Leaf (LogMessage Info 11 "Initiating self-destruct sequence") Leaf)
+
 parseMessageTest :: (String, LogMessage) -> Test
 parseMessageTest (testValue, expectedValue) =
   TestCase $
     assertEqual (assertMessage testValue expectedValue) (parseMessage testValue) expectedValue
 
-tests :: [(String, LogMessage)] -> Test
-tests arr = TestList $ List.map parseMessageTest arr
+parseMessageSuite :: [(String, LogMessage)] -> Test
+parseMessageSuite arr = TestList $ List.map parseMessageTest arr
+
+parseTest :: FilePath -> IO Test
+parseTest file = do
+  content <- readFile file
+  return $ TestCase $ assertEqual "Should parse the log content" (parse content) expectLogStrFormated
+
+buildTest :: FilePath -> IO Test
+buildTest file = do
+  content <- readFile file
+  return $ TestCase $ assertEqual "Should parse log content as binary tree" ((build . parse) content) expectedTree
 
 testsWeek2 :: Test
-testsWeek2 = TestList [TestLabel "Parse message" $ tests logs]
+testsWeek2 = TestList [TestLabel "Parse message" $ parseMessageSuite logs]
+
+testIoWeek2 :: IO Test
+testIoWeek2 =
+  do
+    test <- parseTest "test/input/log.txt"
+    test2 <- buildTest "test/input/log.txt"
+    return $ TestList [TestLabel "parse" test, TestLabel "build" test2]

@@ -1,12 +1,9 @@
 {-# LANGUAGE FlexibleInstances #-}
 
-module Week2 (LogMessage (..), MessageType (..), parseMessage) where
+module Week2 (LogMessage (..), MessageType (..), parseMessage, parse, MessageTree (..), insert, build) where
 
-import Data.Char (digitToInt, isDigit)
-import qualified Data.Maybe as Maybe
-import GHC.Arr (Array (Array))
+import qualified Data.List as List
 import Helpers
-import Text.Read (Lexeme (String))
 
 {- PREDEFINED DATA -}
 
@@ -16,6 +13,11 @@ data MessageType = Info | Warning | Error Int
 type TimeStamp = Int
 
 data LogMessage = LogMessage MessageType TimeStamp String | Unknown String
+  deriving (Show, Eq)
+
+data MessageTree
+  = Leaf
+  | Node MessageTree LogMessage MessageTree
   deriving (Show, Eq)
 
 {- END PREDEFINED DATA -}
@@ -37,3 +39,19 @@ createMessage _ = unknowLog
 
 parseMessage :: String -> LogMessage
 parseMessage = createMessage . words
+
+parse :: String -> [LogMessage]
+parse = List.map parseMessage . lines
+
+getTimeStamp :: LogMessage -> TimeStamp
+getTimeStamp (Unknown _) = -1
+getTimeStamp (LogMessage _ x _) = x
+
+insert :: LogMessage -> MessageTree -> MessageTree
+insert newLog Leaf = Node Leaf newLog Leaf
+insert newLog (Node left cur right)
+  | getTimeStamp newLog < getTimeStamp cur = Node (insert newLog left) cur right
+  | otherwise = Node left cur $ insert newLog right
+
+build :: [LogMessage] -> MessageTree
+build = foldr insert Leaf

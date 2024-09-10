@@ -10,7 +10,7 @@ toDigits n
   | otherwise = (List.map (read . (: [])) . show) n
 
 toDigitsRev :: Integer -> [Integer]
-toDigitsRev n = List.reverse (toDigits n)
+toDigitsRev = List.reverse . toDigits
 
 double :: Integer -> Integer -> Integer
 double idx val
